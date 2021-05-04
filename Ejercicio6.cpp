@@ -5,31 +5,41 @@
 /////////////////  EJERCICIO 6  //////////////////////////////
 
 #include <iostream>
+#include <ctime>
+#include <fstream>
 
 using namespace std;
 
 // FUNCIONES COMPLEMENTARIAS
 
 // Imprimer el arreglo
-void print(char *arr, int tam){
-    for (int i = 0; i < tam; i++)
-        cout << arr[i] << " ";
-}
-
-// Crea letras aleatorias y las inserta en un arreglo
-void aleatorio_char(char *cadena, int tam){
+void print(char **cadenas, int tam, int lon){
     for(int i=0; i<tam; i++){
-        cadena[i] = 97+rand()%(123-97);
+        for(int j=0; j<lon; j++){
+            cout<<cadenas[i][j];
+        }
+        cout<<" ";
     }
 }
 
-// Comprueba que el arreglo efectivamente este ordenado
-bool comprobar(char *arr, int tam){
-    for(int i=0; i+1<tam ; i++){
-        if(!(arr[i]<=arr[i+1])){
-            return false;
+// Crea cadenas aleatorias y las inserta en un arreglo
+void aleatorio_cadenas(char **cadenas, int tam, int lon){
+    srand(time(NULL));
+    for(int i=0; i<tam; i++){
+        for(int j=0; j<lon; j++){
+            cadenas[i][j] = 97+rand()%(123-97);
         }
-    }return true;
+    }
+}
+
+// Pasa el arreglo a un fichero
+void display_in_file1(char **cadenas, int tam, int lon, ofstream &archivo){
+    for(int i=0; i<tam; i++){
+        for(int j=0; j<lon; j++){
+            archivo<<cadenas[i][j];
+        }
+        archivo<<endl;
+    }
 }
 
 //     6                                    ///////////////////////
@@ -38,63 +48,89 @@ bool comprobar(char *arr, int tam){
     Tamaño del arreglo 1000000. */
 
 // Devuelve el mayor del arreglo
-int mayor(char *arr, int tam){
-    int mayor = arr[0];
+int mayor(char **cadenas, int tam, int j){
+    int mayor = cadenas[0][j];
     for (int i = 1; i < tam; i++){
-        if (arr[i] > mayor){
-            mayor = arr[i];
+        if (cadenas[i][j] > mayor){
+            mayor = cadenas[i][j];
         }
-    }return mayor;
+    }
+    return mayor;
 }
 
 // Ordenamiento por Counting Sort (Especifica)
-void count_sort(char *arr, int tam, int ind){
-    int *arreglo_temp = new int[tam];
+void counting_sort(char **cadenas, int tam, int lon, int ind, int j){
+    char **arreglo_temp = new char *[tam];
+    for(int i=0; i<tam; i++){
+        arreglo_temp[i] = new char [lon];
+    }for (int i=0; i < tam; i++){
+        for(int j=0; j<lon; j++){
+            arreglo_temp[i][j] = cadenas[i][j];
+        }
+    }
     int i, count[10] = { 0 };
 
     for (i = 0; i < tam; i++){
-        count[(arr[i] / ind) % 10]++;
+        count[(cadenas[i][j] / ind) % 10]++;
     }
 
-    for (i = 1; i < 10; i++)
+    for (i = 1; i < 10; i++){
         count[i] += count[i - 1];
-
-    for (i = tam - 1; i >= 0; i--) {
-        arreglo_temp[count[(arr[i] / ind) % 10] - 1] = arr[i];
-        count[(arr[i] / ind) % 10]--;
     }
 
-    for (i = 0; i < tam; i++){
-        arr[i] = arreglo_temp[i];
+    for(int i=tam - 1; i >= 0; i--) {
+        arreglo_temp[count[(cadenas[i][j] / ind) % 10] - 1][j] = cadenas[i][j];
+        if(!count[(cadenas[i][j] / ind) % 10] - 1 != i){
+            for(int k=0; k<lon; k++){
+                arreglo_temp[count[(cadenas[i][j] / ind) % 10] - 1][k] = cadenas[i][k];
+            }
+        }
+        count[(cadenas[i][j] / ind) % 10]--;
+    }
+
+    for (int i=0; i < tam; i++){
+        for(int j=0; j<lon; j++){
+            cadenas[i][j] = arreglo_temp[i][j];
+        }
     }
     delete [] arreglo_temp;
 }
 
 // Ordenamiento por Radix Sort (General)
-void radix_sort(char *arr, int tam){
-    for (int i=1; mayor(arr, tam)/i>0; i*=10){
-        count_sort(arr, tam, i);
+void radix_sort(char **arr, int tam, int lon){
+    for (int j=lon-1 ; j>=0 ; j--){
+        for (int i=1; mayor(arr, tam, j)/i>0; i*=10){
+            counting_sort(arr, tam, lon, i, j);
+        }
     }
 }
 
 int main(){
-    cout<<" PROBLEMA 6 > > > "<<endl;
-    int tam;
+    cout<<endl<<" PROBLEMA 6 > > > "<<endl<<endl;
+    int tam, lon;
     cout<<" INGRESE TAMAÑO DEL ARREGLO . . . "; cin>>tam;
-    char *cadena = new char [tam];
-
-    aleatorio_char(cadena, tam);
-
-    //print(arreglo, tam);
-    radix_sort(cadena, tam);
-    //print(cadena, tam);
-    
-    if(comprobar(cadena, tam)){
-        cout<<" > > > Ordenado "<<endl;
-    }else{
-        cout<<" > > > Error "<<endl;
+    cout<<" INGRESE LONGITUD DE LAS CADENAS . . . "; cin>>lon;
+    char **cadenas = new char *[tam];  
+    for(int i=0; i<tam; i++){
+        cadenas[i] = new char[lon];
     }
 
-    delete [] cadena;
+    ofstream archivo, archivo1;
+    archivo.open("D:\\projects\\S3\\Laboratorio_CC_II\\T4_CadenasRandom.txt");
+    archivo1.open("D:\\projects\\S3\\Laboratorio_CC_II\\T4_CadenasRandomOrdenadas.txt");
+
+    aleatorio_cadenas(cadenas, tam, lon);
+    //print6(cadenas, tam, lon);
+    display_in_file1(cadenas, tam, lon, archivo);
+
+    radix_sort(cadenas, tam, lon);
+    //print6(cadenas, tam, lon);
+    display_in_file1(cadenas, tam, lon, archivo1);
+
+    archivo.close();archivo1.close();
+    for(int i=0; i<tam; i++){
+        delete [] cadenas[i];
+    }
+    delete [] cadenas;
     return 0;
 }

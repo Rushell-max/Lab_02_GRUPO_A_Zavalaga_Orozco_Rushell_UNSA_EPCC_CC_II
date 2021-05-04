@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <ctime>
+#include <fstream>
 
 using namespace std;
 
@@ -33,6 +34,13 @@ bool comprobar(int *arreglo, int tam){
             return false;
         }
     }return true;
+}
+
+//Pasa un arreglo a un fichero
+void display_in_file(int *arreglo, int tam, ofstream &archivo){
+    for(int i=0; i<tam; i++){
+        archivo<<arreglo[i]<<" ";
+    }
 }
 
 //     3                                    ///////////////////////
@@ -82,15 +90,22 @@ void radix_sort(int *arr, int tam){
 }
 
 int main(){
-    cout<<" PROBLEMA 3 > > > "<<endl;
+    cout<<endl<<" PROBLEMA 3 > > > "<<endl<<endl;
     int tam;
     cout<<" INGRESE TAMAÑO VECTOR . . . "; cin>>tam;
     int *arreglo = new int [tam];
+    
+    ofstream archivo, archivo1;
+    archivo.open("D:\\projects\\S3\\Laboratorio_CC_II\\T4_ArregloRandom.txt");
+    archivo1.open("D:\\projects\\S3\\Laboratorio_CC_II\\T4_ArregloRandomOrdenado.txt");
 
     aleatorio(arreglo, tam);
     //print_array(arreglo, tam);
+    display_in_file(arreglo, tam, archivo);
 
     radix_sort(arreglo, tam);
+    //print_array(arreglo, tam);
+    display_in_file(arreglo, tam, archivo1);
 
     if(comprobar(arreglo, tam)){
         cout<<" > > > Ordenado "<<endl;
@@ -98,6 +113,7 @@ int main(){
         cout<<" > > > Error "<<endl;
     }
 
+    archivo.close();archivo1.close();
     delete [] arreglo;
 
     return 0;
